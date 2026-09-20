@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230d9488'/%3E%3Cpath d='M22 40 L22 22 M22 22 L14 14 M22 22 L30 14' stroke='white' stroke-width='3' fill='none' stroke-linecap='round'/%3E%3Cpath d='M42 40 L42 22 M42 22 L34 14 M42 22 L50 14' stroke='white' stroke-width='3' fill='none' stroke-linecap='round'/%3E%3Cline x1='22' y1='48' x2='42' y2='48' stroke='white' stroke-width='3'/%3E%3C/svg%3E">
+<title>Sequencing-Based Proximity Proteomics：从抗体-抗原识别到高通量蛋白定量</title>
+<style>
+:root{
+  --navy:#1f4e79;
+  --blue:#2563eb;
+  --teal:#0d9488;
+  --teal-l:#14b8a6;
+  --bg:#fafbfc;
+  --card:#ffffff;
+  --ink:#1f2937;
+  --muted:#64748b;
+  --line:#e2e8f0;
+  --A:#1f4e79;
+  --B:#0d9488;
+  --C:#b45309;
+  --D:#64748b;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:70px}
+body{font-family:-apple-system,"Segoe UI","Microsoft YaHei","PingFang SC",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.65;font-size:15px}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+/* nav */
+nav.topbar{position:fixed;top:0;left:0;right:0;height:56px;background:rgba(255,255,255,.96);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);z-index:100;display:flex;align-items:center;gap:14px;padding:0 20px;overflow-x:auto;white-space:nowrap}
+nav.topbar .brand{font-weight:700;color:var(--navy);font-size:14px;flex-shrink:0}
+nav.topbar a.navlink{color:var(--muted);font-size:13px;flex-shrink:0}
+nav.topbar a.navlink:hover{color:var(--blue)}
+.toggle{margin-left:auto;flex-shrink:0;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+.switch{position:relative;width:42px;height:22px;background:#cbd5e1;border-radius:11px;cursor:pointer;transition:.2s}
+.switch::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+body.pro .switch{background:var(--teal)}
+body.pro .switch::after{left:22px}
+/* layout */
+.wrap{max-width:1200px;margin:0 auto;padding:0 24px}
+header.hero{padding:96px 0 40px}
+header.hero h1{font-size:30px;line-height:1.3;color:var(--navy);font-weight:800;max-width:900px}
+header.hero .sub{font-size:17px;color:var(--muted);margin-top:10px;max-width:820px}
+header.hero .oneliner{margin-top:22px;padding:18px 22px;background:#fff;border-left:4px solid var(--teal);border-radius:6px;font-size:16px;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.04)}
+section{padding:36px 0;border-top:1px solid var(--line)}
+h2.sec{font-size:22px;color:var(--navy);font-weight:700;display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none}
+h2.sec .chev{display:inline-block;transition:.2s;color:var(--teal)}
+h2.sec.closed .chev{transform:rotate(-90deg)}
+.sec-body{margin-top:18px}
+.sec-body.collapsed{display:none}
+h3{font-size:16px;color:var(--navy);margin:18px 0 8px}
+p{margin:8px 0}
+.lead{color:var(--muted);font-size:14px;max-width:900px}
+/* cards grid */
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(2,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g4{grid-template-columns:repeat(4,1fr)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+.card h4{font-size:15px;color:var(--navy);margin-bottom:6px}
+.tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600;vertical-align:middle}
+.tag.A{background:#dbeafe;color:#1e40af}
+.tag.B{background:#ccfbf1;color:#0f766e}
+.tag.C{background:#fef3c7;color:#92400e}
+.tag.D{background:#e2e8f0;color:#475569}
+/* glossary */
+.gloss-item{background:#fff;border:1px solid var(--line);border-radius:10px;margin-bottom:10px;overflow:hidden}
+.gloss-head{padding:12px 16px;cursor:pointer;display:flex;align-items:center;gap:10px;font-weight:600;color:var(--navy);font-size:14px}
+.gloss-head .gchevron{margin-left:auto;color:var(--teal);transition:.2s}
+.gloss-item.closed .gchevron{transform:rotate(-90deg)}
+.gloss-body{padding:0 16px 14px;display:flex;gap:14px;align-items:flex-start}
+.gloss-item.closed .gloss-body{display:none}
+.gloss-body .txt{flex:1}
+.gloss-body svg{flex-shrink:0}
+/* step flow */
+.steps{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.stepbtn{padding:8px 14px;border:1px solid var(--line);background:#fff;border-radius:20px;font-size:13px;cursor:pointer;color:var(--muted)}
+.stepbtn.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+.step-detail{background:#fff;border:1px solid var(--line);border-radius:10px;padding:20px}
+/* tables */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:#fff}
+table{border-collapse:collapse;width:100%;font-size:13px;min-width:760px}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:#f1f5f9;color:var(--navy);font-weight:600;white-space:nowrap}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#f8fafc}
+/* literature cards */
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.fbtn{padding:6px 14px;border:1px solid var(--line);background:#fff;border-radius:16px;font-size:13px;cursor:pointer;color:var(--muted)}
+.fbtn.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+.lit-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.lit-card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px;border-top:3px solid var(--teal)}
+.lit-card[data-cat="A"]{border-top-color:var(--A)}
+.lit-card[data-cat="B"]{border-top-color:var(--B)}
+.lit-card[data-cat="C"]{border-top-color:var(--C)}
+.lit-card[data-cat="D"]{border-top-color:var(--D)}
+.lit-card.hidden{display:none}
+.lit-card .yr{font-size:12px;color:var(--muted)}
+.lit-card h4{font-size:14px;margin:4px 0 6px;color:var(--navy)}
+.lit-card .meta{font-size:12px;color:var(--muted);margin-bottom:8px}
+.lit-card p{font-size:13px;margin:6px 0}
+.lit-card .why{background:#f8fafc;border-radius:6px;padding:8px 10px;font-size:12.5px;color:#334155;margin-top:8px}
+/* timeline */
+.tl{position:relative;margin-left:8px}
+.tl-row{display:grid;grid-template-columns:90px 28px 1fr;gap:0;padding:8px 0;align-items:start}
+.tl-yr{font-weight:700;color:var(--navy);font-size:14px;text-align:right;padding-right:10px}
+.tl-dot{position:relative;display:flex;justify-content:center}
+.tl-dot::before{content:"";width:12px;height:12px;border-radius:50%;background:var(--teal);border:2px solid #fff;box-shadow:0 0 0 2px var(--teal);margin-top:4px;z-index:1}
+.tl-line{position:absolute;left:50%;top:18px;bottom:-8px;width:2px;background:var(--line);transform:translateX(-50%)}
+.tl-row:last-child .tl-line{display:none}
+.tl-evt{padding-bottom:6px;font-size:13.5px}
+/* abcd blocks */
+.abcd{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.abcd .blk{border-radius:10px;padding:16px;border:1px solid var(--line)}
+.abcd .blk.A{background:#eff6ff;border-color:#bfdbfe}
+.abcd .blk.B{background:#f0fdfa;border-color:#99f6e4}
+.abcd .blk.C{background:#fffbeb;border-color:#fde68a}
+.abcd .blk.D{background:#f8fafc;border-color:#e2e8f0}
+.abcd .blk h4{font-size:15px;margin-bottom:6px}
+.abcd .blk.A h4{color:var(--A)}
+.abcd .blk.B h4{color:var(--B)}
+.abcd .blk.C h4{color:var(--C)}
+.abcd .blk.D h4{color:var(--D)}
+.abcd .blk ul{margin:8px 0 0 18px;font-size:13px}
+.abcd .blk li{margin:4px 0}
+/* bottleneck */
+.bn{background:#fff;border:1px solid var(--line);border-radius:10px;margin-bottom:10px;overflow:hidden}
+.bn-head{padding:12px 16px;cursor:pointer;display:flex;align-items:center;gap:8px;font-weight:600;color:var(--navy);font-size:14px}
+.bn-head .g{margin-left:auto;color:var(--teal)}
+.bn.closed .g{transform:rotate(-90deg)}
+.bn-body{padding:0 16px 14px;font-size:13.5px}
+.bn.closed .bn-body{display:none}
+.bn-body .row{margin:6px 0}
+.bn-body .lab{font-weight:700;color:var(--teal);font-size:12px;text-transform:uppercase;letter-spacing:.5px}
+/* pro mode */
+body.beginner .pro-only{display:none !important}
+.pro-only{font-size:12px}
+.note{background:#ecfeff;border:1px solid #a5f3fc;border-radius:8px;padding:10px 14px;font-size:13px;margin:10px 0}
+.warn{background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:10px 14px;font-size:13px;margin:10px 0}
+footer{padding:30px 0 60px;color:var(--muted);font-size:12px;text-align:center}
+svg text{font-family:inherit}
+@media(max-width:900px){
+  .g2,.g3,.g4,.lit-grid,.abcd{grid-template-columns:1fr}
+  header.hero h1{font-size:24px}
+}
+</style>
+</head>
+<body class="beginner">
+
+<nav class="topbar">
+  <span class="brand">Proximity Proteomics</span>
+  <a class="navlink" href="#m1">总览</a>
+  <a class="navlink" href="#m2">术语</a>
+  <a class="navlink" href="#m3">原理</a>
+  <a class="navlink" href="#m4">技术地图</a>
+  <a class="navlink" href="#m5">平台表</a>
+  <a class="navlink" href="#m6">比较矩阵</a>
+  <a class="navlink" href="#m7">文献</a>
+  <a class="navlink" href="#m8">时间线</a>
+  <a class="navlink" href="#m9">瓶颈</a>
+  <a class="navlink" href="#m10">边界</a>
+  <a class="navlink" href="#m11">学习路线</a>
+  <span class="toggle"><span id="tglabel">新手模式</span><span class="switch" id="toggle"></span></span>
+</nav>
+
+<div class="wrap">
+
+<!-- ============ 1 HERO ============ -->
+<header class="hero" id="m1">
+  <h1>Sequencing-Based Proximity Proteomics：从抗体-抗原识别到高通量蛋白定量</h1>
+  <p class="sub">面向科研新手的技术路线、核心机制与研究版图</p>
+  <div class="oneliner">
+    <strong>一句话理解：</strong>用一对抗体把同一个蛋白"夹"住，让两条分别挂在抗体上的 DNA 标签彼此靠近；这种"靠近"会触发一次核酸反应，把蛋白识别事件转成一段可测序的 DNA 条形码——最后测序仪读到的不是蛋白本身，而是"哪个蛋白被夹住了、被夹了多少次"。
+  </div>
+
+  <div style="margin-top:26px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px;overflow-x:auto">
+    <p style="font-size:12px;color:var(--muted);margin:0 0 8px">核心机制流程图（Protein → 夹心结合 → oligo 邻近 → 核酸反应 → DNA 产物 → NGS → 身份 + 丰度）</p>
+    <svg viewBox="0 0 1120 320" width="100%" preserveAspectRatio="xMidYMid meet" role="img" aria-label="核心机制流程图">
+      <defs>
+        <marker id="arr" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+          <path d="M0,0 L9,4.5 L0,9 z" fill="#0d9488"/>
+        </marker>
+      </defs>
+      <!-- 1 protein -->
+      <g>
+        <rect x="20" y="120" rx="26" ry="26" width="110" height="60" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+        <text x="75" y="146" text-anchor="middle" font-size="13" fill="#1e40af" font-weight="700">Protein</text>
+        <text x="75" y="164" text-anchor="middle" font-size="11" fill="#1e40af">(靶蛋白)</text>
+      </g>
+      <line x1="135" y1="150" x2="175" y2="150" stroke="#0d9488" stroke-width="2.5" marker-end="url(#arr)"/>
+      <!-- 2 sandwich -->
+      <g>
+        <rect x="180" y="125" rx="20" ry="20" width="90" height="50" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+        <text x="225" y="155" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="700">蛋白</text>
+        <!-- AbA Y -->
+        <g stroke="#1f4e79" stroke-width="3" fill="none" stroke-linecap="round">
+          <path d="M200 120 L200 95 M200 95 L185 80 M200 95 L215 80"/>
+        </g>
+        <text x="180" y="70" font-size="10" fill="#1f4e79">抗体A</text>
+        <line x1="200" y1="80" x2="200" y2="60" stroke="#14b8a6" stroke-width="2"/>
+        <text x="178" y="52" font-size="9" fill="#0d9488">oligoA</text>
+        <!-- AbB Y -->
+        <g stroke="#1f4e79" stroke-width="3" fill="none" stroke-linecap="round">
+          <path d="M250 180 L250 205 M250 205 L235 220 M250 205 L265 220"/>
+        </g>
+        <text x="258" y="235" font-size="10" fill="#1f4e79">抗体B</text>
+        <line x1="250" y1="220" x2="250" y2="240" stroke="#14b8a6" stroke-width="2"/>
+        <text x="256" y="252" font-size="9" fill="#0d9488">oligoB</text>
+      </g>
+      <line x1="285" y1="150" x2="325" y2="150" stroke="#0d9488" stroke-width="2.5" marker-end="url(#arr)"/>
+      <!-- 3 proximity -->
+      <g>
+        <rect x="330" y="110" rx="12" ry="12" width="120" height="80" fill="#f0fdfa" stroke="#14b8a6" stroke-width="2"/>
+        <text x="390" y="135" text-anchor="middle" font-size="12" fill="#0f766e" font-weight="700">oligo 邻近</text>
+        <text x="390" y="152" text-anchor="middle" font-size="10" fill="#0f766e">两条 oligo 靠近</text>
+        <text x="390" y="168" text-anchor="middle" font-size="10" fill="#0f766e">杂交 / 互补</text>
+        <path d="M360 185 q30 -14 60 0" stroke="#0d9488" stroke-width="1.5" fill="none" stroke-dasharray="3,3"/>
+      </g>
+      <line x1="455" y1="150" x2="495" y2="150" stroke="#0d9488" stroke-width="2.5" marker-end="url(#arr)"/>
+      <!-- 4 nucleic acid reaction -->
+      <g>
+        <rect x="500" y="110" rx="12" ry="12" width="140" height="80" fill="#fff7ed" stroke="#b45309" stroke-width="2"/>
+        <text x="570" y="132" text-anchor="middle" font-size="12" fill="#92400e" font-weight="700">模板依赖核酸反应</text>
+        <text x="570" y="150" text-anchor="middle" font-size="10" fill="#92400e">Extension（聚合酶延伸）</text>
+        <text x="570" y="165" text-anchor="middle" font-size="10" fill="#92400e">或 Ligation（连接酶连接）</text>
+        <text x="570" y="180" text-anchor="middle" font-size="9" fill="#92400e">→ 生成蛋白特异 DNA 条形码</text>
+      </g>
+      <line x1="645" y1="150" x2="685" y2="150" stroke="#0d9488" stroke-width="2.5" marker-end="url(#arr)"/>
+      <!-- 5 DNA product -->
+      <g>
+        <rect x="690" y="120" rx="10" ry="10" width="100" height="60" fill="#fef3c7" stroke="#b45309" stroke-width="2"/>
+        <path d="M710 135 q10 10 0 20 q-10 10 0 20 M725 135 q10 10 0 20 q-10 10 0 20" stroke="#b45309" stroke-width="1.6" fill="none"/>
+        <text x="755" y="155" text-anchor="middle" font-size="11" fill="#92400e" font-weight="700">DNA 产物</text>
+        <text x="755" y="170" text-anchor="middle" font-size="9" fill="#92400e">可 PCR 扩增</text>
+      </g>
+      <line x1="795" y1="150" x2="835" y2="150" stroke="#0d9488" stroke-width="2.5" marker-end="url(#arr)"/>
+      <!-- 6 NGS -->
+      <g>
+        <rect x="840" y="115" rx="8" ry="8" width="90" height="70" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+        <rect x="855" y="130" width="60" height="30" fill="#2563eb" rx="3"/>
+        <text x="885" y="178" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="700">NGS 测序</text>
+      </g>
+      <line x1="935" y1="150" x2="975" y2="150" stroke="#0d9488" stroke-width="2.5" marker-end="url(#arr)"/>
+      <!-- 7 output -->
+      <g>
+        <rect x="980" y="115" rx="12" ry="12" width="125" height="70" fill="#f0fdfa" stroke="#0d9488" stroke-width="2"/>
+        <text x="1042" y="142" text-anchor="middle" font-size="12" fill="#0f766e" font-weight="700">蛋白身份 + 丰度</text>
+        <text x="1042" y="160" text-anchor="middle" font-size="10" fill="#0f766e">哪条条形码被读到</text>
+        <text x="1042" y="175" text-anchor="middle" font-size="10" fill="#0f766e">读了多少次 = 蛋白量</text>
+      </g>
+      <!-- legend -->
+      <g font-size="10" fill="#475569">
+        <rect x="20" y="260" width="14" height="10" rx="3" fill="#dbeafe" stroke="#2563eb"/><text x="40" y="269">蛋白</text>
+        <path d="M90 270 L90 258 M90 258 L82 252 M90 258 L98 252" stroke="#1f4e79" stroke-width="2" fill="none"/><text x="106" y="269">抗体 (Y 形)</text>
+        <line x1="180" y1="265" x2="200" y2="265" stroke="#14b8a6" stroke-width="2"/><text x="206" y="269">oligo / DNA 标签</text>
+        <rect x="300" y="258" width="14" height="10" rx="2" fill="#2563eb"/><text x="320" y="269">测序仪</text>
+      </g>
+    </svg>
+  </div>
+  <div class="warn" style="margin-top:14px">
+    <strong>关键认知：</strong>测序仪读的是"由蛋白识别事件转换出来的核酸信号"，<strong>不是直接测蛋白</strong>。蛋白本身在反应后被丢弃，留在体系里的只是代表它身份与含量的 DNA 条形码。
+  </div>
+</header>
+
+<!-- ============ 2 GLOSSARY ============ -->
+<section id="m2">
+  <h2 class="sec" data-toggle="sec">2. 5 分钟入门 Glossary<span class="chev">▾</span></h2>
+  <div class="sec-body">
+    <p class="lead">11 个核心概念，点开头看一句话解释 + 小图 + 在体系中的作用。</p>
+
+    <div class="gloss-item">
+      <div class="gloss-head">Sandwich assay（夹心法免疫检测）<span class="gchevron">▾</span></div>
+      <div class="gloss-body">
+        <svg width="90" height="70" viewBox="0 0 90 70">
+          <rect x="30" y="28" width="30" height="16" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+          <g stroke="#1f4e79" stroke-width="2" fill="none" stroke-linecap="round"><path d="M38 28 L38 12 M38 12 L30 4 M38 12 L46 4"/><path d="M52 44 L52 60 M52 60 L44 66 M52 60 L60 66"/></g>
+        </svg>
+        <div class="txt"><strong>一句话：</strong>一个蛋白被"上、下"两个识别分子同时夹住。<br><strong>作用：</strong>双重识别把单分子信号变成"两个事件同时发生"，天然过滤掉只被单个抗体误结合的假阳性。本方向的双抗体 PEA/PLA 就是一种溶液相夹心。</div>
+      </div>
+    </div>
+
+    <div class="gloss-item">
+      <div class="gloss-head">Affinity antibody（亲和抗体）<span class="gchevron">▾</span></div>
+      <div class="gloss-body">
+        <svg width="70" height="60" viewBox="0 0 70 60">
+          <g stroke="#1f4e79" stroke-width="2.5" fill="none" stroke-linecap="round"><path d="M35 40 L35 18 M35 18 L22 6 M35 18 L48 6"/></g>
+          <circle cx="35" cy="48" r="6" fill="#dbeafe" stroke="#2563eb"/>
+        </svg>
+        <div class="txt"><strong>一句话：</strong>能高特异性、高亲和力结合特定蛋白表位的 Y 形免疫球蛋白。<br><strong>作用：</strong>整个技术的"识别端"。选哪一对抗体、对同一蛋白上哪两个不同表位，决定了信号的特异性与背景。</div>
+      </div>
+    </div>
+
+    <div class="gloss-item">
+      <div class="gloss-head">Oligonucleotide / Oligo tag（寡核苷酸标签）<span class="gchevron">▾</span></div>
+      <div class="gloss-body">
+        <svg width="90" height="50" viewBox="0 0 90 50">
+          <path d="M15 15 q8 10 0 20 q-8 10 0 20 M30 15 q8 10 0 20 q-8 10 0 20 M45 15 q8 10 0 20 q-8 10 0 20" stroke="#14b8a6" stroke-width="2" fill="none"/>
+          <line x1="15" y1="25" x2="45" y2="25" stroke="#14b8a6" stroke-width="1" stroke-dasharray="2,2"/>
+        </svg>
+        <div class="txt"><strong>一句话：</strong>一段人工合成的短单/双链 DNA，共价挂在抗体上。<br><strong>作用：</strong>它既是"分子标签"（每个蛋白配一条独特序列），又是"反应元件"（两条 oligo 靠近时才能杂交并被聚合酶/连接酶利用）。</div>
+      </div>
+    </div>
+
+    <div class="gloss-item">
+      <div class="gloss-head">Proximity assay（邻近检测）<span class="gchevron">▾</span></div>
+      <div class="gloss-body">
+        <svg width="90" height="60" viewBox="0 0 90 60">
+          <circle cx="25" cy="30" r="10" fill="#dbeafe" stroke="#2563eb"/><circle cx="65" cy="30" r="10" fill="#dbeafe" stroke="#2563eb"/>
+          <path d="M38 30 Q45 18 52 30" stroke="#0d9488" stroke-width="2" fill="none" stroke-dasharray="3,3"/>
+        </svg>
+        <div class="txt"><strong>一句话：</strong>只有两个识别分子真正"靠近"时才产生信号。<br><strong>作用：</strong>把"结合"这个低特异性事件升级成"两个识别事件同时发生在同一分子上"，是高特异性与均相（免洗涤）检测的核心。</div>
+      </div>
+    </div>
+
+    <div class="gloss-item">
+      <div class="gloss-head">Proximity ligation（PLA，邻近连接）<span class="gchevron">▾</span></div>
+      <div class="gloss-body">
+        <svg width="90" height="50" viewBox="0 0 90 50">
+          <line x1="15" y1="25" x2="45" y2="25" stroke="#14b8a6" stroke-width="2"/><line x1="45" y1="25" x2="75" y2="25" stroke="#b45309" stroke-width="2"/>
+          <circle cx="45" cy="25" r="4" fill="#b45309"/>
+        </svg>
+        <div class="txt"><strong>一句话：</strong>两条邻近 oligo 被 DNA <strong>连接酶</strong>拼成一条完整可扩增链。<br><strong>作用：</strong>PLA 的标志性反应。2002 Fredriksson 首次证明；缺点是连接酶在血浆中易被干扰，后被 PEA 用聚合酶路线改进。</div>
+      </div>
+    </div>
+
+    <div class="gloss-item">
+      <div class="gloss-head">Proximity extension（PEA，邻近延伸）<span class="gchevron">▾</span></div>
+      <div class="gloss-body">
+        <svg width="90" height="50" viewBox="0 0 90 50">
+          <line x1="15" y1="25" x2="40" y2="25" stroke="#14b8a6" stroke-width="2"/>
+          <line x1="40" y1="25" x2="75" y2="25" stroke="#0d9488" stroke-width="2.5" marker-end="url(#arr)"/>
+        </svg>
+        <div class="txt"><strong>一句话：</strong>两条邻近 oligo 杂交后，由 DNA <strong>聚合酶</strong>把一条链延伸过另一条探针臂。<br><strong>作用：</strong>PEA 的标志性反应，解决了连接酶在血浆中受干扰的问题；Olink 商用平台全部基于 PEA。</div>
+      </div>
+    </div>
+
+    <div class="gloss-item">
+      <div class="gloss-head">Template-dependent extension（模板依赖延伸）<span class="gchevron">▾</span></div>
+      <div class="gloss-body">
+        <svg width="110" height="55" viewBox="0 0 130 55">
+          <line x1="15" y1="30" x2="115" y2="30" stroke="#94a3b8" stroke-width="2" stroke-dasharray="4,3"/>
+          <line x1="15" y1="40" x2="70" y2="40" stroke="#0d9488" stroke-width="2.5"/>
+          <text x="78" y="22" font-size="9" fill="#0f766e">按模板补链</text>
+        </svg>
+        <div class="txt"><strong>一句话：</strong>聚合酶以另一条邻近 oligo 为模板，按碱基互补合成新链。<br><strong>作用：</strong>只有当两条 oligo 真正邻近并互补配对时，聚合酶才有模板可读——这是"邻近"被翻译成"序列"的化学关键。</div>
+      </div>
+    </div>
+
+    <div class="gloss-item">
+      <div class="gloss-head">DNA amplification（DNA 扩增）<span class="gchevron">▾</span></div>
+      <div class="gloss-body">
+        <svg width="90" height="55" viewBox="0 0 90 55">
+          <rect x="15" y="20" width="14" height="14" fill="#fef3c7" stroke="#b45309"/>
+          <rect x="40" y="15" width="14" height="14" fill="#fef3c7" stroke="#b45309"/>
+          <rect x="65" y="25" width="14" height="14" fill="#fef3c7" stroke="#b45309"/>
+          <line x1="29" y1="27" x2="40" y2="22" stroke="#b45309" stroke-width="1.5"/>
+          <line x1="54" y1="22" x2="65" y2="32" stroke="#b45309" stroke-width="1.5"/>
+        </svg>
+        <div class="txt"><strong>一句话：</strong>PCR 把每一个邻近事件产生的少量 DNA 指数级放大到可检测水平。<br><strong>作用：</strong>把单个蛋白识别事件放大成千上万个拷贝，是飞摩尔级灵敏度的来源；但也会引入 GC/长度偏好，需用 UMI 校正。</div>
+      </div>
+    </div>
+
+    <div class="gloss-item">
+      <div class="gloss-head">Sequencing readout（测序读出）<span class="gchevron">▾</span></div>
+      <div class="gloss-body">
+        <svg width="90" height="55" viewBox="0 0 90 55">
+          <rect x="20" y="12" width="50" height="30" rx="4" fill="#2563eb"/>
+          <text x="45" y="48" text-anchor="middle" font-size="9" fill="#1e40af">NGS</text>
+        </svg>
+        <div class="txt"><strong>一句话：</strong>用下一代测序（NGS）读出每条 DNA 条形码的序列与拷贝数。<br><strong>作用：</strong>把多重上限从 qPCR 荧光通道数解放出来——Wik 2021 起 Olink Explore 才从 qPCR 改为 NGS，实现 ~1500→5400+ 蛋白并行。</div>
+      </div>
+    </div>
+
+    <div class="gloss-item">
+      <div class="gloss-head">Protein barcode（蛋白条形码）<span class="gchevron">▾</span></div>
+      <div class="gloss-body">
+        <svg width="90" height="50" viewBox="0 0 90 50">
+          <g fill="#1f4e79"><rect x="15" y="15" width="3" height="22"/><rect x="22" y="15" width="6" height="22"/><rect x="32" y="15" width="2" height="22"/><rect x="38" y="15" width="5" height="22"/><rect x="48" y="15" width="3" height="22"/><rect x="55" y="15" width="7" height="22"/><rect x="66" y="15" width="2" height="22"/></g>
+        </svg>
+        <div class="txt"><strong>一句话：</strong>每一个靶蛋白对应一段独特 DNA 序列，序列身份 = 蛋白身份。<br><strong>作用：</strong>测序仪不需要认识蛋白，只要读出"这段序列出现了多少次"，就能反推出该蛋白的相对丰度。</div>
+      </div>
+    </div>
+
+    <div class="gloss-item">
+      <div class="gloss-head">Multiplex protein quantification（多重蛋白定量）<span class="gchevron">▾</span></div>
+      <div class="gloss-body">
+        <svg width="90" height="55" viewBox="0 0 90 55">
+          <g><rect x="12" y="12" width="16" height="16" fill="#dbeafe" stroke="#2563eb"/><rect x="34" y="12" width="16" height="16" fill="#f0fdfa" stroke="#14b8a6"/><rect x="56" y="12" width="16" height="16" fill="#fef3c7" stroke="#b45309"/><rect x="12" y="34" width="16" height="16" fill="#f0fdfa" stroke="#14b8a6"/><rect x="34" y="34" width="16" height="16" fill="#fef3c7" stroke="#b45309"/><rect x="56" y="34" width="16" height="16" fill="#dbeafe" stroke="#2563eb"/></g>
+        </svg>
+        <div class="txt"><strong>一句话：</strong>在同一份微量样品里同时测几百到几千个蛋白。<br><strong>作用：</strong>这是从 1-plex（2002）→ 96-plex（2014）→ ~1500-plex（2021）→ 5400+（Explore HT）的主线驱动力；NGS 读出是多重数量级跃升的关键。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3 CORE WORKFLOW ============ -->
+<section id="m3">
+  <h2 class="sec" data-toggle="sec">3. 核心工作原理（6 步交互流程）<span class="chev">▾</span></h2>
+  <div class="sec-body">
+    <p class="lead">点击下方步骤条，查看每一步的详细示意与说明。</p>
+    <div class="steps" id="stepbar">
+      <button class="stepbtn active" data-step="1">Step 1 抗体-抗原识别</button>
+      <button class="stepbtn" data-step="2">Step 2 oligo 邻近</button>
+      <button class="stepbtn" data-step="3">Step 3 邻近依赖核酸反应</button>
+      <button class="stepbtn" data-step="4">Step 4 DNA/RNA 信号</button>
+      <button class="stepbtn" data-step="5">Step 5 NGS 读出</button>
+      <button class="stepbtn" data-step="6">Step 6 定量</button>
+    </div>
+    <div class="step-detail" id="stepdetail"></div>
+  </div>
+</section>
+
+<!-- ============ 4 LANDSCAPE ============ -->
+<section id="m4">
+  <h2 class="sec" data-toggle="sec">4. 技术路线地图（Technology Landscape）<span class="chev">▾</span></h2>
+  <div class="sec-body">
+    <p class="lead">名称相近但机制不同的分支已用差异标签标出。注意：<strong>PEA(extension) ≠ PLA(ligation)</strong>；单抗体 barcoding 不构成 proximity。</p>
+    <div style="background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px;overflow-x:auto">
+    <svg viewBox="0 0 1080 460" width="100%" role="img" aria-label="技术路线家谱图">
+      <!-- root -->
+      <rect x="430" y="10" width="220" height="46" rx="10" fill="#1f4e79"/>
+      <text x="540" y="30" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">Antibody–Oligo 偶联体系</text>
+      <text x="540" y="46" text-anchor="middle" fill="#cbd5e1" font-size="10">Protein detection via DNA tag</text>
+
+      <!-- trunk lines -->
+      <line x1="540" y1="56" x2="540" y2="80" stroke="#94a3b8" stroke-width="1.5"/>
+
+      <!-- Branch: dual-antibody proximity -->
+      <line x1="540" y1="80" x2="200" y2="110" stroke="#94a3b8" stroke-width="1.5"/>
+      <line x1="540" y1="80" x2="540" y2="110" stroke="#94a3b8" stroke-width="1.5"/>
+      <line x1="540" y1="80" x2="880" y2="110" stroke="#94a3b8" stroke-width="1.5"/>
+
+      <rect x="110" y="110" width="180" height="44" rx="8" fill="#ccfbf1" stroke="#0d9488"/>
+      <text x="200" y="130" text-anchor="middle" font-size="12" font-weight="700" fill="#0f766e">双抗体 Proximity</text>
+      <text x="200" y="146" text-anchor="middle" font-size="10" fill="#0f766e">两个抗体靠近才出信号</text>
+
+      <rect x="440" y="110" width="200" height="44" rx="8" fill="#fef3c7" stroke="#b45309"/>
+      <text x="540" y="130" text-anchor="middle" font-size="12" font-weight="700" fill="#92400e">DNA-templated proximity</text>
+      <text x="540" y="146" text-anchor="middle" font-size="10" fill="#92400e">DNA 探针扫描/成环（非夹心）</text>
+
+      <rect x="780" y="110" width="200" height="44" rx="8" fill="#fce7f3" stroke="#be185d"/>
+      <text x="880" y="130" text-anchor="middle" font-size="12" font-weight="700" fill="#9d174d">单抗体 Barcode</text>
+      <text x="880" y="146" text-anchor="middle" font-size="10" fill="#9d174d">无双抗体 proximity</text>
+
+      <!-- PLA / PEA under dual -->
+      <line x1="200" y1="154" x2="90" y2="190" stroke="#94a3b8" stroke-width="1.5"/>
+      <line x1="200" y1="154" x2="330" y2="190" stroke="#94a3b8" stroke-width="1.5"/>
+      <rect x="20" y="190" width="140" height="42" rx="8" fill="#fff" stroke="#0d9488" stroke-width="1.5"/>
+      <text x="90" y="208" text-anchor="middle" font-size="12" font-weight="700" fill="#0f766e">PLA 分支</text>
+      <text x="90" y="224" text-anchor="middle" font-size="10" fill="#0f766e">Ligation（连接酶）</text>
+      <rect x="260" y="190" width="140" height="42" rx="8" fill="#fff" stroke="#2563eb" stroke-width="1.5"/>
+      <text x="330" y="208" text-anchor="middle" font-size="12" font-weight="700" fill="#1e40af">PEA 分支</text>
+      <text x="330" y="224" text-anchor="middle" font-size="10" fill="#1e40af">Extension（聚合酶）</text>
+
+      <!-- readouts under PLA/PEA -->
+      <line x1="90" y1="232" x2="90" y2="262" stroke="#94a3b8" stroke-width="1.5"/>
+      <rect x="5" y="262" width="175" height="58" rx="8" fill="#f8fafc" stroke="#94a3b8"/>
+      <text x="92" y="280" text-anchor="middle" font-size="11" fill="#475569">经典 readout：qPCR / RCA 显微</text>
+      <text x="92" y="295" text-anchor="middle" font-size="10" fill="#64748b">Fredriksson 2002 · Gullberg 2004</text>
+      <text x="92" y="309" text-anchor="middle" font-size="10" fill="#64748b">Söderberg 2006</text>
+
+      <line x1="330" y1="232" x2="330" y2="262" stroke="#94a3b8" stroke-width="1.5"/>
+      <rect x="235" y="262" width="175" height="58" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+      <text x="322" y="280" text-anchor="middle" font-size="11" fill="#1e40af">PEA + NGS readout（A 类）</text>
+      <text x="322" y="295" text-anchor="middle" font-size="10" fill="#2563eb">Wik 2021 Olink Explore</text>
+      <text x="322" y="309" text-anchor="middle" font-size="10" fill="#2563eb">Reveal 2025</text>
+
+      <!-- DNA templated -->
+      <line x1="540" y1="154" x2="540" y2="190" stroke="#94a3b8" stroke-width="1.5"/>
+      <rect x="450" y="190" width="180" height="42" rx="8" fill="#fff" stroke="#b45309" stroke-width="1.5"/>
+      <text x="540" y="208" text-anchor="middle" font-size="11" font-weight="700" fill="#92400e">PADSE-seq / MPX / Prox-seq</text>
+      <text x="540" y="224" text-anchor="middle" font-size="10" fill="#92400e">纳米 DNA 探针扫描 · 像素邻接 · 复合体连接</text>
+
+      <!-- single antibody -->
+      <line x1="880" y1="154" x2="880" y2="190" stroke="#94a3b8" stroke-width="1.5"/>
+      <rect x="770" y="190" width="220" height="42" rx="8" fill="#fff" stroke="#be185d" stroke-width="1.5"/>
+      <text x="880" y="208" text-anchor="middle" font-size="11" font-weight="700" fill="#9d174d">CITE-seq / REAP-seq / AbSeq / TotalSeq</text>
+      <text x="880" y="224" text-anchor="middle" font-size="10" fill="#9d174d">单抗体 ADT barcode → scRNA-seq 共文库 NGS</text>
+
+      <!-- bottom: sequencing-based proximity (core) -->
+      <line x1="540" y1="232" x2="540" y2="340" stroke="#0d9488" stroke-width="2" stroke-dasharray="4,3"/>
+      <rect x="360" y="340" width="360" height="56" rx="12" fill="#0d9488"/>
+      <text x="540" y="364" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">Sequencing-Based Proximity Proteomics（本报告主线）</text>
+      <text x="540" y="382" text-anchor="middle" fill="#ccfbf1" font-size="10">溶液相 + 双抗体夹心 + oligo 邻近 + 核酸反应 + NGS 读出（A 类）</text>
+
+      <!-- annotations -->
+      <g font-size="9" fill="#94a3b8">
+        <text x="40" y="410">差异标签：PLA = 连接酶；PEA = 聚合酶延伸；单抗体 barcode 无邻近事件；SomaScan 用适配体非抗体；Simoa 无核酸读出。</text>
+      </g>
+    </svg>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5 PLATFORM TABLE ============ -->
+<section id="m5">
+  <h2 class="sec" data-toggle="sec">5. 代表性技术 / 平台表格<span class="chev">▾</span></h2>
+  <div class="sec-body">
+    <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>技术 / 平台</th><th>核心机制</th><th>双抗体</th><th>Proximity</th><th>核酸反应</th><th>NGS</th><th>Multiplex</th><th>典型应用</th></tr></thead>
+      <tbody>
+        <tr><td>Fredriksson PLA 2002</td><td>双 aptamer 邻近 + DNA 连接酶 ligation</td><td>否（aptamer）</td><td>是</td><td>ligation</td><td>否（PCR）</td><td>1-plex</td><td>PDGF 单靶点概念验证</td></tr>
+        <tr><td>Gullberg PLA 2004</td><td>双抗体拆分 + 邻近 ligation</td><td>是</td><td>是</td><td>ligation</td><td>否（qPCR）</td><td>1-plex</td><td>细胞因子均相检测</td></tr>
+        <tr><td>in situ PLA (Söderberg 2006)</td><td>固定细胞内邻近成环 + 滚环扩增(RCA)</td><td>是</td><td>是</td><td>ligation + RCA</td><td>否（荧光显微）</td><td>低多重成像</td><td>单细胞内蛋白复合物定位</td></tr>
+        <tr><td>Lundberg PEA 2011</td><td>双抗体 + 聚合酶邻近延伸</td><td>是</td><td>是</td><td>extension</td><td>否（qPCR）</td><td>~23-plex</td><td>人血浆低丰度蛋白检测</td></tr>
+        <tr><td>Assarsson 96-plex PEA 2014</td><td>Pwo 聚合酶工程化 96 靶并行</td><td>是</td><td>是</td><td>extension</td><td>否（微流控 qPCR）</td><td>96-plex</td><td>血清/血浆/干血斑 biomarker 筛选</td></tr>
+        <tr><td>Olink Explore (Wik 2021)</td><td>PEA + 自动化建库 + Illumina NGS</td><td>是</td><td>是</td><td>extension</td><td>是</td><td>~1500（HT 5400+）</td><td>大队列血浆蛋白组学（UKB-PPP）</td></tr>
+        <tr><td>Olink Reveal 2025</td><td>PEA + NGS，面向常规 NGS 流程用户</td><td>是</td><td>是</td><td>extension</td><td>是</td><td>~1000</td><td>常规 NGS 实验室高 plex 蛋白定量</td></tr>
+        <tr><td>Prox-seq 2024</td><td>膜蛋白双探针邻近连接 + 单细胞测序</td><td>是</td><td>是</td><td>ligation</td><td>是</td><td>n 蛋白 + n(n−1)/2 复合体</td><td>单细胞蛋白-蛋白邻近/复合体</td></tr>
+        <tr><td>MPX Molecular Pixelation 2024</td><td>抗体-oligo 偶联物 + DNA 像素邻接重建</td><td>是(AOC)</td><td>是（DNA 像素）</td><td>邻接关联</td><td>是</td><td>~80 膜蛋白</td><td>单细胞表面蛋白 3D 拓扑</td></tr>
+        <tr><td>PADSE-seq 2025</td><td>单锚柔性 DNA 探针纳米扫描 + 循环酶切</td><td>否（单锚探针）</td><td>是（摆动范围）</td><td>循环切割激活</td><td>是</td><td>膜蛋白邻近扫描</td><td>膜蛋白纳米组织图谱</td></tr>
+        <tr><td>sc-aPL 2024</td><td>化学活性探针邻近连接 + 单细胞测序</td><td>否（化学探针）</td><td>是</td><td>ligation</td><td>是</td><td>Ag-6 酶活性 panel</td><td>单细胞酶活性（代谢/转移）</td></tr>
+        <tr><td>Phospho-seq 2025</td><td>oligo-抗体胞内磷酸化蛋白 + 多模态</td><td>是（单抗体）</td><td>否</td><td>条码扩增</td><td>是</td><td>自定义 + ATAC + RNA</td><td>单细胞胞内蛋白+染色质+转录组</td></tr>
+        <tr><td>CITE-seq (Stoeckius 2017)</td><td>单抗体 ADT barcode + scRNA-seq 共读</td><td>否（单抗体）</td><td>否</td><td>条码 PCR</td><td>是</td><td>~13 原文，现 100+</td><td>单细胞表面蛋白+转录组</td></tr>
+        <tr><td>REAP-seq (Peterson 2017)</td><td>单抗体 DNA 条码 + 液滴微流控</td><td>否（单抗体）</td><td>否</td><td>条码 PCR</td><td>是</td><td>82 抗体 + 20k 基因</td><td>单细胞蛋白+转录组并行</td></tr>
+        <tr><td>PLAYR (Frei 2016)</td><td>RNA 探针邻近成环 + RCA + 金属标签</td><td>否（RNA 探针）</td><td>是（RNA 间）</td><td>ligation + RCA</td><td>否（CyTOF 质谱流式）</td><td>>40 mRNA + 蛋白</td><td>单细胞 RNA + 蛋白同时定量</td></tr>
+        <tr><td>AbSeq (Shahi 2017)</td><td>单抗体标签 + 液滴 SOE-PCR 拼接</td><td>否（单抗体）</td><td>否</td><td>SOE-PCR 拼接</td><td>是</td><td>条码可扩展</td><td>纯蛋白单细胞超高通量</td></tr>
+        <tr><td>Simoa (Quanterix)</td><td>酶标夹心 + 飞升级微孔单分子荧光计数</td><td>是</td><td>否</td><td>无核酸</td><td>否（荧光计数）</td><td>≤~10-plex</td><td>fg/mL 级超灵敏单蛋白定量</td></tr>
+        <tr><td>SomaScan (SomaLogic)</td><td>SOMAmer 适配体结合 + 荧光微阵列</td><td>否（适配体）</td><td>否</td><td>无邻近反应</td><td>否（Cy3 RFU 阵列）</td><td>~7000–11000</td><td>血浆大队列宽覆盖蛋白组学</td></tr>
+        <tr><td>LC-MS/MS</td><td>酶切肽段 → LC 分离 → 质谱碎裂搜库</td><td>否</td><td>否</td><td>无</td><td>否（质谱）</td><td>数千–10000+</td><td>发现式无偏蛋白组学</td></tr>
+        <tr><td>ELISA</td><td>固相夹心 + 酶底物显色/发光</td><td>是</td><td>否</td><td>无</td><td>否（光学）</td><td>1（Luminex ~10–50）</td><td>单/少数靶标常规定量</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="note pro-only">表中"双抗体/Proximity/核酸反应/NGS"四列是区分 A/B/C/D 类别的关键判据，详见模块 10。</div>
+  </div>
+</section>
+
+<!-- ============ 6 COMPARISON MATRIX ============ -->
+<section id="m6">
+  <h2 class="sec" data-toggle="sec">6. 与其他蛋白组学技术比较矩阵<span class="chev">▾</span></h2>
+  <div class="sec-body">
+    <p class="lead">不做"谁最好"评判，只说各自适合解决什么问题。</p>
+    <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>方法</th><th>检测原理</th><th>需要抗体</th><th>核酸标签</th><th>NGS</th><th>Multiplex</th><th>灵敏度</th><th>覆盖范围</th><th>定量方式</th><th>适合解决什么问题</th></tr></thead>
+      <tbody>
+        <tr><td>ELISA</td><td>固相夹心 + 酶显色</td><td>是</td><td>否</td><td>否</td><td>1（Luminex ~10–50）</td><td>pg/mL–ng/mL</td><td>单靶/少数</td><td>绝对（标曲）</td><td>已知单靶标的常规绝对定量</td></tr>
+        <tr><td>Western blot</td><td>SDS-PAGE 分离 + 抗体显影</td><td>是</td><td>否</td><td>否</td><td>1–2/胶</td><td>ng 级（半定量）</td><td>少数靶标</td><td>相对（灰度）</td><td>验证分子量/异构体，半定量</td></tr>
+        <tr><td>Simoa</td><td>酶标夹心 + 飞升级微孔单分子计数</td><td>是</td><td>否</td><td>否</td><td>≤~10</td><td>~fg/mL（比 ELISA 高 ~1000×）</td><td>少数超敏靶标</td><td>绝对</td><td>极低丰度细胞因子/p 蛋白超灵敏定量</td></tr>
+        <tr><td>Olink / PEA</td><td>双抗体-oligo 邻近延伸</td><td>是（双抗体）</td><td>是</td><td>Explore/Reveal 是；Target 96 否</td><td>92–5400+</td><td>pg/mL–ng/mL，~10 log 动态范围</td><td>靶向面板（中低丰度偏多）</td><td>NPX 相对；部分 panel 绝对</td><td>微量血浆大队列靶向蛋白组学</td></tr>
+        <tr><td>SomaScan</td><td>SOMAmer 适配体 + 荧光微阵列</td><td>否（适配体）</td><td>是（本身即 DNA）</td><td>否（Cy3 RFU）</td><td>~7000–11000</td><td>fM–μM，~8 log</td><td>宽覆盖（约一半人蛋白组）</td><td>相对（RFU 校准）</td><td>宽覆盖大队列、发现式宽谱筛查</td></tr>
+        <tr><td>Proximity ligation (PLA 经典)</td><td>双配体邻近 + 连接酶 ligation</td><td>是（或 aptamer）</td><td>是</td><td>否（qPCR/RCA 显微）</td><td>低–74-plex</td><td>fM 级</td><td>少数靶标</td><td>qPCR 相对</td><td>均相均相检测 / 原位蛋白复合物成像</td></tr>
+        <tr><td>LC-MS/MS 蛋白组学</td><td>酶切肽段 + 质谱碎裂搜库</td><td>否</td><td>否</td><td>否（质谱）</td><td>数千–10000+</td><td>nM / 数十 pg/mL（deplete 后）</td><td>无偏发现式，中高丰度为主</td><td>相对（LFQ/TMT）；绝对需 spike-in</td><td>无偏发现、翻译后修饰、未知蛋白鉴定</td></tr>
+        <tr><td>本方向（solution sandwich + oligo + seq）</td><td>双抗体溶液相夹心 + oligo 邻近 + 延伸/连接 + NGS</td><td>是（双抗体配对）</td><td>是</td><td>是</td><td>百–数千（Prox-seq 可测复合体）</td><td>sub-pg/mL 级</td><td>靶向高 plex；可扩展到单细胞/复合体</td><td>条形码 read 计数相对</td><td>微量样品高通量蛋白定量 + 蛋白邻近/单细胞</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 7 LITERATURE CARDS ============ -->
+<section id="m7">
+  <h2 class="sec" data-toggle="sec">7. 代表性文献卡片<span class="chev">▾</span></h2>
+  <div class="sec-body">
+    <div class="filters">
+      <button class="fbtn active" data-f="all">全部</button>
+      <button class="fbtn" data-f="A">A 核心方向</button>
+      <button class="fbtn" data-f="B">B 机制相关</button>
+      <button class="fbtn" data-f="C">C 相邻技术</button>
+      <button class="fbtn" data-f="D">D 背景对照</button>
+    </div>
+    <div class="lit-grid" id="litgrid"></div>
+  </div>
+</section>
+
+<!-- ============ 8 TIMELINE ============ -->
+<section id="m8">
+  <h2 class="sec" data-toggle="sec">8. 技术发展时间线<span class="chev">▾</span></h2>
+  <div class="sec-body">
+    <div class="tl" id="timeline"></div>
+  </div>
+</section>
+
+<!-- ============ 9 BOTTLENECKS ============ -->
+<section id="m9">
+  <h2 class="sec" data-toggle="sec">9. 当前技术瓶颈<span class="chev">▾</span></h2>
+  <div class="sec-body">
+    <p class="lead">每个瓶颈按"是什么 → 为什么发生 → 对结果影响 → 目前怎么解决"展开。</p>
+    <div id="bnlist"></div>
+  </div>
+</section>
+
+<!-- ============ 10 A/B/C/D ============ -->
+<section id="m10">
+  <h2 class="sec" data-toggle="sec">10. 机制边界（A / B / C / D 分类）<span class="chev">▾</span></h2>
+  <div class="sec-body">
+    <div class="abcd">
+      <div class="blk A">
+        <h4>A · 高度匹配（核心方向）</h4>
+        <p style="font-size:12.5px;color:#1e40af">判据：溶液相 + 双抗体夹心 + oligo 邻近 + 模板依赖核酸反应 + NGS 读出，五项全满足。</p>
+        <ul>
+          <li><strong>Wik 2021 / Olink Explore</strong>（MCP，10.1016/j.mcpro.2021.100168）——本家族首个 PEA+NGS 闭环，~1500-plex。</li>
+          <li><strong>Olink Reveal 2025</strong>（J Proteome Res，10.1021/acs.jproteome.5c00571）——第三方独立评测的 PEA+NGS 平台。</li>
+          <li><strong>Prox-seq 2024</strong>（Nat Protoc，10.1038/s41596-024-01030-x）——把 proximity 从定量蛋白升级到定量蛋白复合体，单细胞 NGS。</li>
+        </ul>
+      </div>
+      <div class="blk B">
+        <h4>B · 机制高度相关</h4>
+        <p style="font-size:12.5px;color:#0f766e">判据：确实出现双抗体/双探针 proximity 或核酸连接/扩增，但某一步或 readout 与 A 不一致（多为 qPCR/RCA/CyTOF 读出，或非标准夹心）。</p>
+        <ul>
+          <li>PLA/PEA 经典：Fredriksson 2002、Gullberg 2004、Söderberg in situ 2006、Lundberg PEA 2011、Assarsson 2014、Lundberg multiplex PLA 2011（readout 均为 qPCR/RCA 显微）。</li>
+          <li>近作：MPX 2024（DNA 像素邻接）、PADSE-seq 2025（单锚扫描）、sc-aPL 2024（化学活性探针）、Phospho-seq 2025（胞内单抗体 barcode）。</li>
+        </ul>
+      </div>
+      <div class="blk C">
+        <h4>C · 相邻技术（不依赖双抗体 proximity）</h4>
+        <p style="font-size:12.5px;color:#92400e">判据：用抗体/适配体 + 核酸标签，但不要求两个识别分子邻近同时结合；或单分子数字计数但无核酸读出。</p>
+        <ul>
+          <li>单抗体 barcode：CITE-seq / REAP-seq / AbSeq / TotalSeq（ADT 计数，无第二抗体、无邻近触发反应）。</li>
+          <li>PLAYR 2016（CyTOF 金属标签质谱流式，非 NGS；proximity 发生在 RNA 探针间）。</li>
+          <li>SomaScan（SOMAmer 适配体，荧光微阵列 Cy3 RFU，<strong>非抗体、非 NGS</strong>）。</li>
+          <li>Simoa（酶标 + 飞升级微孔单分子荧光计数，<strong>无核酸标签</strong>）。</li>
+          <li>MaMBA/BLISA 2025、PLAMseq 2025（TurboID 邻近标记 + MS/NGS）。</li>
+        </ul>
+      </div>
+      <div class="blk D">
+        <h4>D · 仅作背景</h4>
+        <p style="font-size:12.5px;color:#475569">判据：无核酸标签、无邻近机制的传统方法，仅用于能力对照。</p>
+        <ul>
+          <li>ELISA、Western blot（光学/条带读出）。</li>
+          <li>LC-MS/MS（无抗体、无核酸标签，质谱鉴定）。</li>
+          <li>大样本平台对照：Ferkingstad 2023 Nature（Olink vs SomaScan）、Olink 3072 vs 质谱 2025。</li>
+        </ul>
+      </div>
+    </div>
+    <div class="warn" style="margin-top:14px">
+      <strong>三条必须记住的边界：</strong>
+      ① PEA(extension) ≠ PLA(ligation)，前者用聚合酶、后者用连接酶；
+      ② SomaScan 用<strong>适配体(SOMAmer)</strong>不是抗体，读出是<strong>荧光微阵列</strong>不是 NGS；
+      ③ Simoa <strong>无核酸标签</strong>（酶标+单分子光学计数），传统质谱<strong>无抗体无核酸标签</strong>。
+    </div>
+  </div>
+</section>
+
+<!-- ============ 11 KNOWLEDGE MAP ============ -->
+<section id="m11">
+  <h2 class="sec" data-toggle="sec">11. 新手知识地图与学习路线<span class="chev">▾</span></h2>
+  <div class="sec-body">
+    <div style="background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px;overflow-x:auto">
+      <svg viewBox="0 0 1080 130" width="100%" role="img" aria-label="知识路径图">
+        <defs><marker id="arr2" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#0d9488"/></marker></defs>
+        <g font-size="11">
+          <rect x="10" y="45" width="150" height="44" rx="10" fill="#dbeafe" stroke="#2563eb"/>
+          <text x="85" y="71" text-anchor="middle" fill="#1e40af" font-weight="700">Protein detection</text>
+          <line x1="160" y1="67" x2="185" y2="67" stroke="#0d9488" stroke-width="2" marker-end="url(#arr2)"/>
+          <rect x="190" y="45" width="140" height="44" rx="10" fill="#dbeafe" stroke="#2563eb"/>
+          <text x="260" y="71" text-anchor="middle" fill="#1e40af" font-weight="700">immunoassay</text>
+          <line x1="330" y1="67" x2="355" y2="67" stroke="#0d9488" stroke-width="2" marker-end="url(#arr2)"/>
+          <rect x="360" y="45" width="140" height="44" rx="10" fill="#ccfbf1" stroke="#0d9488"/>
+          <text x="430" y="71" text-anchor="middle" fill="#0f766e" font-weight="700">proximity assay</text>
+          <line x1="500" y1="67" x2="525" y2="67" stroke="#0d9488" stroke-width="2" marker-end="url(#arr2)"/>
+          <rect x="530" y="45" width="170" height="44" rx="10" fill="#ccfbf1" stroke="#0d9488"/>
+          <text x="615" y="67" text-anchor="middle" fill="#0f766e" font-weight="700">nucleic-acid encoded assay</text>
+          <line x1="700" y1="67" x2="725" y2="67" stroke="#0d9488" stroke-width="2" marker-end="url(#arr2)"/>
+          <rect x="730" y="45" width="180" height="44" rx="10" fill="#0d9488"/>
+          <text x="820" y="65" text-anchor="middle" fill="#fff" font-weight="700">sequencing-based</text>
+          <text x="820" y="80" text-anchor="middle" fill="#ccfbf1" font-size="10">protein assay</text>
+          <line x1="910" y1="67" x2="935" y2="67" stroke="#0d9488" stroke-width="2" marker-end="url(#arr2)"/>
+          <rect x="940" y="45" width="135" height="44" rx="10" fill="#1f4e79"/>
+          <text x="1007" y="71" text-anchor="middle" fill="#fff" font-weight="700">high-plex proteomics</text>
+        </g>
+      </svg>
+    </div>
+
+    <h3>9 步学习路线</h3>
+    <div class="grid g3">
+      <div class="card"><h4>1. ELISA / sandwich</h4><p>先搞懂经典夹心法：捕获抗体 + 检测抗体 + 光学读出。这是所有"双识别"的起点。</p></div>
+      <div class="card"><h4>2. Antibody–antigen recognition</h4><p>理解表位、亲和力、交叉反应——为什么一对配对抗体能决定特异性。</p></div>
+      <div class="card"><h4>3. Oligo-conjugated antibody</h4><p>学抗体-寡核苷酸偶联：DAR、位点特异 vs 随机化学偶联、偶联对亲和力的影响。</p></div>
+      <div class="card"><h4>4. Proximity assay</h4><p>理解"为什么两个分子靠近才出信号"：邻近事件 = 双重识别的生物学逻辑。</p></div>
+      <div class="card"><h4>5. PLA / PEA</h4><p>对比 ligation（连接酶）vs extension（聚合酶延伸）两条分支，读 Fredriksson 2002 与 Lundberg 2011。</p></div>
+      <div class="card"><h4>6. Nucleic-acid amplification</h4><p>PCR/qPCR/RCA 扩增原理与偏好；UMI 如何校正 PCR 重复。</p></div>
+      <div class="card"><h4>7. NGS basics</h4><p>Illumina 短读长测序原理、建库、barcode/index、reads/UMI 计数。</p></div>
+      <div class="card"><h4>8. Sequencing-based proteomics</h4><p>读 Wik 2021（Olink Explore）与 Prox-seq 2024，理解 readout 从 qPCR 到 NGS 的跃升。</p></div>
+      <div class="card"><h4>9. 区分 A/B/C/D</h4><p>拿模块 10 的判据去看每篇新文献：是不是双抗体、有没有邻近、读出是不是 NGS。</p></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  本页面所有论文标题 / 作者 / 年份 / 期刊 / DOI 均来自已核实文献素材（核实时间 2026-09-20）。<br>
+  Sequencing-Based Proximity Proteomics · 面向科研新手的交互式调研报告
+</footer>
+</div>
+
+<script>
+/* ---------- pro / beginner toggle ---------- */
+var body=document.body, tg=document.getElementById('toggle'), lb=document.getElementById('tglabel');
+tg.addEventListener('click',function(){
+  if(body.classList.contains('beginner')){body.classList.remove('beginner');body.classList.add('pro');lb.textContent='专业模式';}
+  else{body.classList.add('beginner');body.classList.remove('pro');lb.textContent='新手模式';}
+});
+
+/* ---------- section collapse ---------- */
+document.querySelectorAll('h2.sec').forEach(function(h){
+  h.addEventListener('click',function(){
+    h.classList.toggle('closed');
+    var b=h.nextElementSibling;
+    if(b&&b.classList.contains('sec-body')) b.classList.toggle('collapsed');
+  });
+});
+
+/* ---------- glossary collapse ---------- */
+document.querySelectorAll('.gloss-head').forEach(function(h){
+  h.addEventListener('click',function(){h.parentElement.classList.toggle('closed');});
+});
+
+/* ---------- step flow ---------- */
+var steps={
+1:{t:'Step 1 · 抗体-抗原识别',svg:'<svg viewBox="0 0 520 160" width="100%" style="max-width:520px"><rect x="210" y="60" width="100" height="50" rx="20" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/><text x="260" y="90" text-anchor="middle" font-size="13" fill="#1e40af" font-weight="700">靶蛋白</text><g stroke="#1f4e79" stroke-width="3" fill="none" stroke-linecap="round"><path d="M230 60 L230 30 M230 30 L215 16 M230 30 L245 16"/><path d="M290 110 L290 140 M290 140 L275 154 M290 140 L305 154"/></g><text x="180" y="14" font-size="11" fill="#1f4e79">抗体A（表位1）</text><text x="310" y="158" font-size="11" fill="#1f4e79">抗体B（表位2）</text></svg>',
+ d:'在溶液相或细胞表面，一对针对同一蛋白不同表位的抗体（分别偶联 oligoA / oligoB）同时结合靶蛋白。两个表位必须在同一分子上、且相距足够近，才能让后续两条 oligo 发生作用。'},
+2:{t:'Step 2 · oligo proximity（邻近）',svg:'<svg viewBox="0 0 520 160" width="100%" style="max-width:520px"><rect x="210" y="60" width="100" height="50" rx="20" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/><text x="260" y="90" text-anchor="middle" font-size="13" fill="#1e40af" font-weight="700">蛋白夹心</text><line x1="230" y1="30" x2="230" y2="18" stroke="#14b8a6" stroke-width="2.5"/><line x1="290" y1="140" x2="290" y2="152" stroke="#14b8a6" stroke-width="2.5"/><path d="M230 18 Q260 0 290 152" stroke="#0d9488" stroke-width="2" fill="none" stroke-dasharray="4,3"/><text x="310" y="20" font-size="11" fill="#0f766e">oligoA</text><text x="305" y="150" font-size="11" fill="#0f766e">oligoB</text><text x="260" y="40" text-anchor="middle" font-size="10" fill="#0f766e">两条 oligo 因双抗夹心而靠近、杂交</text></svg>',
+ d:'两个抗体结合同一蛋白后，挂在它们上面的两条 oligo 被物理拉近到纳米级距离，相互杂交互补。关键：只有"同时结合同一分子"才会产生这种邻近——单个抗体游离时两条 oligo 相距太远，不反应。这就是 proximity 特异性的来源。'},
+3:{t:'Step 3 · 邻近依赖核酸反应',svg:'<svg viewBox="0 0 520 180" width="100%" style="max-width:520px"><rect x="40" y="60" width="180" height="70" rx="10" fill="#fff7ed" stroke="#b45309"/><text x="130" y="85" text-anchor="middle" font-size="12" font-weight="700" fill="#92400e">Extension（PEA）</text><line x1="70" y1="105" x2="130" y2="105" stroke="#14b8a6" stroke-width="2.5"/><line x1="130" y1="105" x2="190" y2="105" stroke="#0d9488" stroke-width="2.5"/><text x="130" y="125" text-anchor="middle" font-size="10" fill="#92400e">DNA 聚合酶按模板延伸</text><rect x="280" y="60" width="180" height="70" rx="10" fill="#f0fdfa" stroke="#0d9488"/><text x="370" y="85" text-anchor="middle" font-size="12" font-weight="700" fill="#0f766e">Ligation（PLA）</text><line x1="310" y1="105" x2="360" y2="105" stroke="#14b8a6" stroke-width="2.5"/><circle cx="370" cy="105" r="5" fill="#b45309"/><line x1="380" y1="105" x2="440" y2="105" stroke="#b45309" stroke-width="2.5"/><text x="370" y="125" text-anchor="middle" font-size="10" fill="#0f766e">DNA 连接酶把两条 oligo 接上</text></svg>',
+ d:'邻近杂交后有两条经典路线：<strong>PEA 用 DNA 聚合酶</strong>把一条链按另一条为模板延伸（解决血浆中连接酶易受干扰的问题）；<strong>PLA 用 DNA 连接酶</strong>把两段 oligo 直接拼成完整序列。两条路线都把"邻近"翻译成一段新的、该蛋白特有的 DNA 产物。'},
+4:{t:'Step 4 · DNA / RNA signal（可扩增信号）',svg:'<svg viewBox="0 0 520 140" width="100%" style="max-width:520px"><path d="M120 40 q10 15 0 30 q-10 15 0 30 M140 40 q10 15 0 30 q-10 15 0 30 M160 40 q10 15 0 30 q-10 15 0 30" stroke="#b45309" stroke-width="2" fill="none"/><text x="250" y="60" font-size="12" fill="#92400e" font-weight="700">蛋白特异双链 DNA 条形码</text><text x="250" y="82" font-size="11" fill="#92400e">每一个夹心事件 → 一段独特序列 → 可 PCR 扩增</text><rect x="250" y="95" width="180" height="30" rx="6" fill="#fef3c7" stroke="#b45309"/><text x="340" y="114" text-anchor="middle" font-size="11" fill="#92400e">PCR 扩增指数放大</text></svg>',
+ d:'反应产物是一段只在该蛋白被夹心时才产生的双链 DNA 条形码。随后 PCR 把它指数级放大到 ng 级，足以被 qPCR 或测序仪检测。注意：产物里已经不含蛋白，只剩"身份序列 + 拷贝数"。'},
+5:{t:'Step 5 · NGS readout（测序读出）',svg:'<svg viewBox="0 0 520 150" width="100%" style="max-width:520px"><rect x="180" y="30" width="160" height="70" rx="8" fill="#2563eb"/><rect x="200" y="48" width="120" height="34" fill="#1d4ed8" rx="3"/><text x="260" y="118" text-anchor="middle" font-size="12" fill="#1e40af" font-weight="700">Illumina NGS 测序仪</text><g font-size="10" fill="#475569"><text x="60" y="50">读出：</text><text x="60" y="68">· 每条 reads = 一个条形码</text><text x="60" y="86">· 条形码序列 → 哪个蛋白</text><text x="60" y="104">· reads/UMI 数 → 多少蛋白</text></g></svg>',
+ d:'把建好的文库送上 Illumina 测序仪。每个 read 读出一条 DNA 条形码：<strong>序列身份告诉你是哪个蛋白，read/UMI 计数告诉你有多少</strong>。2021 年 Wik 把 Olink 从 qPCR 改成 NGS 后，多重上限从通道数解放到 ~1500→5400+ 蛋白。'},
+6:{t:'Step 6 · Quantification（定量）',svg:'<svg viewBox="0 0 520 160" width="100%" style="max-width:520px"><g fill="none" stroke="#0d9488" stroke-width="2"><polyline points="60,120 120,90 180,100 240,60 300,75 360,45 420,55 470,35"/></g><g fill="#0d9488"><circle cx="60" cy="120" r="3"/><circle cx="180" cy="100" r="3"/><circle cx="300" cy="75" r="3"/><circle cx="420" cy="55" r="3"/></g><line x1="60" y1="130" x2="470" y2="130" stroke="#94a3b8"/><line x1="60" y1="30" x2="60" y2="130" stroke="#94a3b8"/><text x="260" y="150" text-anchor="middle" font-size="11" fill="#475569">蛋白 X 的 read 计数 → 相对丰度（NPX / UMI）</text></svg>',
+ d:'把每个条形码的 reads/UMI 数经背景扣减、板内/板间归一化后，得到每个蛋白的相对丰度（Olink 输出 NPX = log2 相对单位；带校准品 panel 可做绝对定量）。测序深度、批次效应、UMI 去重是这一步必须处理的技术变量。'}
+};
+var sd=document.getElementById('stepdetail');
+function renderStep(k){
+  var s=steps[k];
+  sd.innerHTML='<h4 style="color:var(--navy);margin-bottom:10px">'+s.t+'</h4><div style="display:flex;gap:20px;flex-wrap:wrap;align-items:center">'+s.svg+'<div style="flex:1;min-width:260px;font-size:14px">'+s.d+'</div></div>';
+}
+renderStep(1);
+document.querySelectorAll('.stepbtn').forEach(function(b){
+  b.addEventListener('click',function(){
+    document.querySelectorAll('.stepbtn').forEach(function(x){x.classList.remove('active');});
+    b.classList.add('active');
+    renderStep(b.dataset.step);
+  });
+});
+
+/* ---------- literature cards ---------- */
+var lit=[
+{c:'A',y:'2021',name:'Olink Explore（PEA + NGS）',authors:'Wik L. 等，Olink Proteomics',ven:'Mol Cell Proteomics 20:100168',mech:'双抗体-oligo 邻近 + 聚合酶延伸 + Illumina NGS',plex:'~1500-plex（HT 5400+）',read:'NGS',contrib:'本家族首个把 readout 换成 NGS 的奠基工作，~1500 蛋白并行，~9 log 动态范围。',doi:'https://doi.org/10.1016/j.mcpro.2021.100168',why:'这是"溶液相夹心+oligo 邻近+核酸延伸+NGS"完整闭环的最贴切落点，也是理解为什么必须从 qPCR 升级到 NGS 的关键论文。'},
+{c:'A',y:'2025',name:'Olink Reveal PEA 独立评测',authors:'J Proteome Res 第三方评测（NIST SRM 1950 + Spike-in）',ven:'J Proteome Res',mech:'PEA 双抗体邻近延伸 + NGS 读出',plex:'Reveal ~1000；Explore HT >5000',read:'NGS',contrib:'非厂商的真实评测，给出 PEA-on-NGS 平台的精密度、LOD、批间表现实测值。',doi:'https://doi.org/10.1021/acs.jproteome.5c00571',why:'新手最该读的"平台标称 vs 实测"基准，帮你建立对厂商宣传数字的判断力。'},
+{c:'A',y:'2024',name:'Proximity sequencing（Prox-seq）',authors:'Vistain L, Tay S 等（芝加哥大学）',ven:'Nat Protoc（方法学 ~2024）',mech:'膜蛋白双探针邻近连接 + 单细胞 NGS',plex:'n 蛋白 + n(n−1)/2 复合体',read:'NGS（与 scRNA-seq 共文库）',contrib:'把 proximity 从"定量蛋白"升级为"定量蛋白-蛋白邻近/复合体"，可同时测 mRNA。',doi:'https://doi.org/10.1038/s41596-024-01030-x',why:'理解 PLA/PEA 从"计数蛋白"走向"计数相互作用"的关键范例；配套 Nature Protocol 是复现入口。'},
+{c:'B',y:'2002',name:'PLA 奠基（aptamer 版）',authors:'Fredriksson S, … Landegren U（Uppsala）',ven:'Nat Biotechnol 20(5):473–477',mech:'双 DNA 适配体邻近 + 连接酶 ligation + PCR',plex:'1-plex（PDGF）',read:'PCR',contrib:'首次证明"邻近依赖 DNA 连接"能把蛋白信号转成可 PCR 放大的 DNA 标签，zeptomole 级、免洗涤。',doi:'https://doi.org/10.1038/nbt0502-473',why:'整个"把蛋白检测转成 DNA 序列"思路的开山之作；注意这一版用 aptamer 而非抗体，readout 是 PCR 不是 NGS。'},
+{c:'B',y:'2004',name:'抗体版 PLA（细胞因子）',authors:'Gullberg M, … Landegren U',ven:'PNAS 101(22):8420–8424',mech:'双抗体-oligo 邻近 + ligation',plex:'1-plex 概念验证',read:'qPCR',contrib:'把 2002 年的 aptamer 换成抗体，证明任何配对抗体对都能转成 PLA 探针，1 µL 样本飞摩尔灵敏度。',doi:'https://doi.org/10.1073/pnas.0400552101',why:'"抗体-寡核苷酸偶联 proximity 探针"标准化起点；也是 PEA（用聚合酶替代连接酶）要解决的问题来源。'},
+{c:'B',y:'2006',name:'in situ PLA',authors:'Söderberg O, … Landegren U',ven:'Nat Methods 3(12):995–1000',mech:'固定细胞内邻近成环 + 连接酶闭合 + 滚环扩增(RCA)',plex:'低多重成像',read:'荧光显微（RCA 微点）',contrib:'把溶液相 PLA 改造成原位、空间分辨版本，单分子分辨率可视化内源 Myc–Max 复合物。',doi:'https://doi.org/10.1038/nmeth947',why:'Duolink in situ PLA 商品线的技术源头；注意它不是溶液相、readout 是 RCA+显微，既非 qPCR 也非 NGS。'},
+{c:'B',y:'2011',name:'PEA 奠基',authors:'Lundberg M, Fredriksson S（Olink Bioscience）',ven:'Nucleic Acids Res 39(15):e102',mech:'双抗体 + DNA 聚合酶邻近延伸',plex:'~23-plex',read:'qPCR',contrib:'用聚合酶延伸替代连接酶，解决血浆中连接酶易受干扰问题；1 µL 血浆 fM 灵敏度、5 log 动态范围。',doi:'https://doi.org/10.1093/nar/gkr424',why:'PEA 家族开山之作；【注意】期刊是 NAR 不是 Nature Methods。这是 96-plex 与 ~1500-plex NGS 版的直接前身。'},
+{c:'B',y:'2011',name:'多重均相 PLA（74-plex）',authors:'Lundberg M, Fredriksson S 等',ven:'Mol Cell Proteomics 10(4):M110.004978',mech:'连接酶路线 4×24-plex 面板 + 微流控 qPCR',plex:'74-plex',read:'微流控 qPCR',contrib:'PLA 连接酶路线的多重化代表作，演示结直肠癌血浆 biomarker 多变量筛选。',doi:'https://doi.org/10.1074/mcp.M110.004978',why:'与同年 PEA 奠基对照读，能看清"ligation vs extension"两条技术分支在多重化上的取舍。'},
+{c:'B',y:'2014',name:'96-plex PEA',authors:'Assarsson E, Lundberg M, Fredriksson S',ven:'PLOS ONE 9(4):e95192',mech:'Pwo 聚合酶室温加样 + 96 靶并行',plex:'96-plex',read:'微流控 qPCR',contrib:'把 PEA 从实验室 23-plex 推到商用 96-plex 面板，引入板间对照与归一化。',doi:'https://doi.org/10.1371/journal.pone.0095192',why:'Olink Target 96 的方法学蓝本；【注意】期刊是 PLOS ONE 不是 MCP。要再往上扩到上千蛋白必须换 NGS——这正是 Wik 2021 做的事。'},
+{c:'B',y:'2016',name:'PLAYR',authors:'Frei AP, … Nolan GP, Gherardini PF（Stanford）',ven:'Nat Methods 13(3):269–275',mech:'同一条 mRNA 上两探针邻近成环 + RCA + 金属标签',plex:'>40 mRNA + 蛋白',read:'CyTOF 质谱流式（金属标签）',contrib:'单细胞同时测 RNA 与蛋白，真正包含 proximity+连接酶+RCA 核酸反应。',doi:'https://doi.org/10.1038/nmeth.3742',why:'名字带 proximity ligation 但极易误读：邻近发生在 RNA 探针间，读出是 CyTOF 不是 NGS，蛋白侧用金属标签。【注意】期刊是 Nature Methods。'},
+{c:'B',y:'2024',name:'MPX Molecular Pixelation',authors:'Karlsson F, Kallas T 等（Pixelgen）',ven:'Nat Methods 21(6):1044–1052',mech:'抗体-oligo 偶联物(AOC) + 纳米 DNA 像素邻接重建',plex:'~80 膜蛋白',read:'NGS（无光学成像，纯测序重建）',contrib:'把"邻近"从判定信号有无升级为重建膜上分子邻接图，每细胞 >1000 个空间连接区。',doi:'https://doi.org/10.1038/s41592-024-02268-9',why:'代表 AOC+NGS 从定量走向空间定位的分支，说明"测序也能做空间蛋白组"。'},
+{c:'B',y:'2025',name:'PADSE-seq',authors:'Zhao X, … Zhao Y（吉林大学/上海交大）',ven:'PNAS 122(15):e2425000122',mech:'单端锚定柔性 DNA 探针纳米扫描 + 循环酶切激活',plex:'膜蛋白邻近扫描',read:'NGS',contrib:'用可摆动单锚探针 + 循环切割替代刚性双抗体配对，把 proximity 从成对事件变成连续扫描记录。',doi:'https://doi.org/10.1073/pnas.2425000122',why:'展示 proximity 信号如何从"成对事件"变成"连续扫描记录"，对理解 background 与 dynamic range 设计很有启发。'},
+{c:'B',y:'2024',name:'sc-aPL（单细胞活性邻近连接）',authors:'Pillai KS, … Tay S, Moellering RE',ven:'Sci Adv 10(43):eadp2622',mech:'化学活性探针识别酶活性 + 邻近连接 + 测序',plex:'Ag-6 酶活性 panel',read:'NGS',contrib:'证明 proximity ligation 不必用抗体——可用化学活性探针测蛋白功能状态（活性而非丰度）。',doi:'https://doi.org/10.1126/sciadv.adp2622',why:'"测活性 vs 测丰度"这一关键概念的活教材：识别臂从免疫识别扩展到化学蛋白质组学。'},
+{c:'B',y:'2025',name:'Phospho-seq',authors:'Blair JD, … Treutlein B, Satija R（NYGC/NYU/ETH）',ven:'Nat Commun 16:1346',mech:'oligo-抗体胞内磷酸化蛋白 + 染色质 + RNA 多模态',plex:'自定义胞内 panel + ATAC + RNA',read:'NGS',contrib:'把 oligo-抗体路线从膜蛋白推进到胞内磷酸化蛋白，支持用户自偶联抗体。',doi:'https://doi.org/10.1038/s41467-025-56590-7',why:'解决 CITE-seq 长期只能测膜蛋白的痛点；注意它是单细胞单抗体 barcode（类 ADT），不是溶液相双抗体 proximity。'},
+{c:'C',y:'2017',name:'CITE-seq',authors:'Stoeckius M, … Smibert P（NYGC）',ven:'Nat Methods 14(9):865–868',mech:'单抗体偶联独特 barcode oligo + scRNA-seq 共读',plex:'原文 ~13，现 100+',read:'NGS',contrib:'奠定 ADT（antibody-derived tag）库通用范式。',doi:'https://doi.org/10.1038/nmeth.4380',why:'"抗体带 oligo、测序读蛋白"开山之作之一。务必记住：一个抗原只被一个带 oligo 抗体识别，不依赖第二个抗体靠近。'},
+{c:'C',y:'2017',name:'REAP-seq',authors:'Peterson VM, … Klappenbach JA（Merck）',ven:'Nat Biotechnol 35(10):936–939',mech:'单抗体 DNA 条码(65–66 nt) + 液滴微流控',plex:'82 抗体 + >20000 基因',read:'NGS',contrib:'与 CITE-seq 同期平行独立方案，证明"抗体-oligo+单细胞测序"在 2017 年是两条独立路线同时跑通。',doi:'https://doi.org/10.1038/nbt.3973',why:'对比 CITE-seq 能看清条码设计（polyA/poly-dT 捕获兼容）的细微差别；同样是单抗体、无 proximity。'},
+{c:'C',y:'2017',name:'AbSeq',authors:'Shahi P, … Abate AR（UCSF）',ven:'Sci Rep 7:44447',mech:'单抗体标签 + 液滴三重合并 + SOE-PCR 拼接 + UMI',plex:'条码设计近乎无限',read:'NGS',contrib:'纯蛋白、不强行连转录组的单细胞测序路线代表。',doi:'https://doi.org/10.1038/srep44447',why:'【注意】一作是 Shahi 不是 Shi，2017 年 Sci Rep。SOE-PCR 只是把条码拼到一起，不要求两个抗体同时结合同一抗原。'},
+{c:'C',y:'2010',name:'Simoa（数字免疫检测）',authors:'Rissin DM, … Duffy DC（Quanterix）',ven:'Nat Biotechnol 28(6):595–599',mech:'酶标夹心 + 飞升级微孔单分子荧光数字计数',plex:'HD-X 4-plex；Planar ~10-plex',read:'荧光显微计数（无核酸）',contrib:'把免疫检测灵敏度推到 subfemtomolar，比常规 ELISA 高 ~1000×。',doi:'https://doi.org/10.1038/nbt.1641',why:'【注意】Simoa 是酶标+单分子光学计数，无任何核酸标签，不要和 Olink/SomaScan 混淆。'},
+{c:'C',y:'2010',name:'SomaScan / SOMAmer',authors:'Gold L, … Cook HW（SomaLogic）',ven:'PLoS ONE 5(12):e15004',mech:'SOMAmer 修饰 DNA 适配体结合 + 荧光微阵列',plex:'v4.1 ~7000；11K assay ~11000 测量',read:'荧光微阵列 Cy3 RFU（非 NGS）',contrib:'用适配体替代抗体实现宽覆盖多重蛋白组学。',doi:'https://doi.org/10.1371/journal.pone.0015004',why:'【注意】SomaScan 用适配体非抗体、读出是荧光微阵列不是 NGS；和 Olink 都用 DNA 但化学机制完全不同。'},
+{c:'C',y:'2025',name:'MaMBA / BLISA',authors:'Zhong S, … Luo M（北大/NIBS）',ven:'eLife 105225',mech:'酶促位点特异把 DNA barcode 偶联到纳米抗体',plex:'模块化可扩展',read:'BLISA 版 NGS（成像版否）',contrib:'酶促位点特异偶联解决抗体-oligo 偶联效率与批间差瓶颈。',doi:'https://doi.org/10.7554/eLife.105225',why:'reagent 端改进代表：比传统化学偶联更可重复、更易扩散；但属单/双抗夹心 barcode，非 proximity 反应。'},
+{c:'C',y:'2025',name:'PLAMseq',authors:'González-Vinceiro L, … González-Prieto R',ven:'Sci Adv 11(45):eady4151',mech:'TurboID 邻近标记 + 甲醛交联 + 蛋白组-基因组联合',plex:'单目标蛋白相互作用组',read:'NGS（DNA 端）+ 质谱（蛋白端）',contrib:'基于 TurboID 酶促邻近标记，同时纯化相互作用蛋白及其关联 DNA。',doi:'https://doi.org/10.1126/sciadv.ady4151',why:'帮你区分两个常被混淆的家族：proximity labeling（TurboID/BioID）≠ proximity extension/ligation（PEA/PLA）。'},
+{c:'D',y:'2023',name:'Olink vs SomaScan 大样本对照',authors:'Ferkingstad E, …（deCODE/Amgen + UKB-PPP）',ven:'Nature 622:348–358',mech:'~5 万样本比较 PEA-on-NGS 与适配体路线',plex:'Olink ~2900 vs SomaScan ~5000',read:'Olink NGS / SomaScan 微阵列',contrib:'两平台在 pQTL 与疾病关联上一致性与差异的最权威大样本证据。',doi:'https://doi.org/10.1038/s41586-023-06563-x',why:'新手常误以为不同高通量蛋白平台可互换，此文给出反例——覆盖、精密度、遗传关联重合度都不同。'},
+{c:'D',y:'2025',name:'Olink Explore 3072 vs 质谱',authors:'Clinical Proteomics / PMC12586489',ven:'PMC12586489',mech:'88 份血浆、1129 共有蛋白头对头比较',plex:'1129 共有蛋白',read:'Olink NGS / LC-MS/MS',contrib:'给出亲和类 PEA/NGS 与质谱类定量一致性（中位相关 ~0.59）与互补性量化结论。',doi:'https://pmc.ncbi.nlm.nih.gov/articles/PMC12586489/',why:'理解"亲和类 PEA/NGS"与"质谱类"为何常被视为互补而非替代的直接证据。'}
+];
+var grid=document.getElementById('litgrid');
+lit.forEach(function(p,i){
+  var el=document.createElement('div');
+  el.className='lit-card';el.dataset.cat=p.c;
+  el.innerHTML='<span class="tag '+p.c+'">'+p.c+' 类</span> <span class="yr">'+p.y+'</span>'+
+    '<h4>'+p.name+'</h4>'+
+    '<div class="meta">'+p.authors+' · '+p.ven+'</div>'+
+    '<p><strong>核心机制：</strong>'+p.mech+'</p>'+
+    '<p><strong>multiplex：</strong>'+p.plex+'　<strong>readout：</strong>'+p.read+'</p>'+
+    '<p><strong>主要贡献：</strong>'+p.contrib+'</p>'+
+    '<p class="pro-only">DOI：<a href="'+p.doi+'" target="_blank" rel="noopener">'+p.doi.replace('https://','')+'</a></p>'+
+    '<div class="why"><strong>为什么值得新手了解：</strong>'+p.why+'</div>';
+  grid.appendChild(el);
+});
+document.querySelectorAll('.fbtn').forEach(function(b){
+  b.addEventListener('click',function(){
+    document.querySelectorAll('.fbtn').forEach(function(x){x.classList.remove('active');});
+    b.classList.add('active');
+    var f=b.dataset.f;
+    document.querySelectorAll('.lit-card').forEach(function(c){
+      c.classList.toggle('hidden', !(f==='all'||c.dataset.cat===f));
+    });
+  });
+});
+
+/* ---------- timeline ---------- */
+var tl=[
+{y:'2002',e:'PLA 概念奠基：Fredriksson 用双 aptamer 邻近 ligation + PCR 首次把蛋白信号转成 DNA 标签。',doi:'https://doi.org/10.1038/nbt0502-473'},
+{y:'2004',e:'Gullberg 把配体换成抗体，抗体版均相 PLA 成熟（细胞因子）。',doi:'https://doi.org/10.1073/pnas.0400552101'},
+{y:'2006',e:'Söderberg in situ PLA：固定细胞内邻近成环 + RCA 荧光微点，走向空间成像分支（Duolink）。',doi:'https://doi.org/10.1038/nmeth947'},
+{y:'2010',e:'Simoa 单分子数字免疫检测（Rissin, Nat Biotechnol）；SomaScan/SOMAmer 适配体多重蛋白技术（Gold, PLoS ONE）。',doi:'https://doi.org/10.1038/nbt.1641'},
+{y:'2011',e:'Lundberg PEA 奠基：聚合酶延伸替代连接酶（NAR, e102）；同团队 74-plex 连接酶路线（MCP）。',doi:'https://doi.org/10.1093/nar/gkr424'},
+{y:'2014',e:'Assarsson 96-plex PEA 工程化（PLOS ONE），Olink Target 96 商用面板蓝本。',doi:'https://doi.org/10.1371/journal.pone.0095192'},
+{y:'2016',e:'PLAYR（Frei, Nat Methods）：RNA 探针邻近 + RCA + CyTOF 金属标签，单细胞 RNA+蛋白。',doi:'https://doi.org/10.1038/nmeth.3742'},
+{y:'2017',e:'CITE-seq / REAP-seq 同年跑通：单抗体 ADT barcode + 单细胞 NGS；AbSeq（Shahi, Sci Rep）液滴 SOE-PCR 路线。',doi:'https://doi.org/10.1038/nmeth.4380'},
+{y:'2021',e:'Wik PEA + NGS（Olink Explore, MCP）：readout 从 qPCR 升级到 NGS，~1500-plex，本家族首个严格 A 类。',doi:'https://doi.org/10.1016/j.mcpro.2021.100168'},
+{y:'2024',e:'Prox-seq（单细胞蛋白复合体）、MPX Molecular Pixelation（DNA 像素空间重建）、sc-aPL（化学活性邻近连接）。',doi:'https://doi.org/10.1038/s41596-024-01030-x'},
+{y:'2025',e:'Olink Reveal 独立评测（A 类）、PADSE-seq 单锚扫描、Phospho-seq 胞内磷酸化蛋白多模态、MaMBA/PLAMseq。Olink 2024-07 被 Thermo Fisher 收购。',doi:'https://doi.org/10.1021/acs.jproteome.5c00571'}
+];
+var tlEl=document.getElementById('timeline');
+tl.forEach(function(n){
+  var row=document.createElement('div');row.className='tl-row';
+  row.innerHTML='<div class="tl-yr">'+n.y+'</div><div class="tl-dot"><span class="tl-line"></span></div><div class="tl-evt">'+n.e+'<div class="pro-only" style="margin-top:3px"><a href="'+n.doi+'" target="_blank" rel="noopener">'+n.doi.replace('https://','')+'</a></div></div>';
+  tlEl.appendChild(row);
+});
+
+/* ---------- bottlenecks ---------- */
+var bn=[
+{t:'1. 抗体特异性 / cross-reactivity',what:'一对抗体不只识别靶蛋白，也结合同源蛋白/亚型/其他表位，产生假阳性信号。',why:'抗体对同源家族共有表位天然交叉识别；多重化时几百上千抗体同时反应，交叉对组合数随规模平方增长。',impact:'把 A 蛋白信号误记到 B 蛋白，特异性丢失、biomarker 假阳性；proximity 双抗体系中单链交叉若被第二抗体补全会进一步放大背景。',how:'双抗体 proximity 设计本身可过滤单链交叉；用敲除细胞/重组蛋白库做特异性验证；panel 设计规避高同源靶对。'},
+{t:'2. 非特异邻近 / 背景噪声',what:'两个本不应靠近的 oligo-抗体因随机碰撞、共同聚集或非特异吸附也触发延伸/连接。',why:'DNA 链带电荷会非特异结合细胞表面/蛋白复合物；反应体系两条探针距离越近、浓度越高，随机碰撞概率越大。',impact:'LOD 被抬高，低丰度蛋白信号淹没在本底；假阳性"邻近事件"污染蛋白复合体判断。',how:'优化探针浓度与反应体积；用双链 oligo 或封闭试剂减少 DNA 非特异吸附；设无靶标对照孔估计本底并做统计阈值。'},
+{t:'3. Oligo-antibody 偶联效率与批间差',what:'寡核苷酸偶联到抗体上的化学效率、每抗体带几条 oligo、偶联位点分布，不同批次不一致。',why:'传统 NHS/maleimide 化学偶联靶向随机赖氨酸/半胱氨酸，可能落在抗原结合区附近，偶联比(DAR)不可控；游离 oligo 残留引入变异。',impact:'同靶标不同批次信号强度、亲和力、背景漂移；跨批数据不可直接合并；用户自配抗体时尤其突出。',how:'改用位点特异/酶促偶联（如 MaMBA）；固定反应当量、纯化流程与放行质检；用标准化商品化 AOC 降低自建批间差。'},
+{t:'4. 反应 / 扩增效率',what:'从"双抗体结合靶标"到"产生可扩增 DNA 产物"的转化率不稳定、不完全。',why:'邻近反应依赖两条 oligo 刚好在反应窗口内互补并被酶利用；酶活、温度、dNTP/ATP 浓度、二级结构都影响；PCR 还引入 GC/长度偏好。',impact:'低丰度靶标转化率低、信号被低估；不同蛋白对扩增效率差异导致 cross-panel 定量不可比。',how:'反应体系与酶条件标准化；引入 UMI 做分子级定量消除 PCR 重复与偏好；用 spike-in 内部探针监测反应效率。'},
+{t:'5. 动态范围 / LOD',what:'平台能可靠定量的浓度区间上下限跨度与最低检出浓度。',why:'血浆蛋白浓度跨约 10 个数量级（白蛋白 mg/mL 到 fM 细胞因子）；单孔单一稀释无法同时兼顾极高与极低丰度。',impact:'高丰度蛋白在饱和区无法区分；低丰度 biomarker 落在噪声以下；跨样本比较只在中段线性区可信。',how:'SomaScan 用三档梯度稀释把总动态范围拉到 ~10 log；Olink 用高 plex + 高灵敏延伸覆盖低丰段；分析上只在线性区报告。'},
+{t:'6. 基质效应',what:'同浓度靶蛋白在血清、血浆、CSF、裂解液、组织匀浆等不同基质里测出信号不同。',why:'不同基质总蛋白浓度、脂质、代谢物、内源抗体、异嗜性抗体(HAMA)、pH 与离子强度不同，会竞争结合、干扰杂交或直接非特异触发邻近反应。',impact:'跨样本类型数据不可直接比较；CSF 等低蛋白/高抑制基质里信号系统性偏低。',how:'在相同基质下建标曲与对照；用稀释减少基质抑制；换基质（如 CSF）需重新验证；加基质匹配 spike-in 校准。'},
+{t:'7. 校准 / 归一化',what:'把 read 数/RFU 换算成可跨样本比较的相对（或绝对）浓度的过程。',why:'测序深度、杂交效率、板效应、批次差异都会乘性改变信号；亲和类方法测的是相对信号而非绝对浓度。',impact:'不归一化会把技术波动误判为生物学差异；归一化方法选择会改变下游关联结论；跨平台原始值根本不可比。',how:'SomaScan 用杂交归一化→中位数→板尺度→板间校准多步 scale factor；Olink 用内部对照蛋白板内/板间校准；跨研究比较必须重做归一化并警惕 platform drift。'},
+{t:'8. 批次效应',what:'不同检测日、板、试剂批次、测序 run 带来的与生物学无关的系统差异。',why:'探针批次、酶活、室温、测序深度、操作人员都引入乘性偏移；大队列样本分批处理时批次又常与临床变量混淆。',impact:'伪关联、队列间不可重复；新药/疾病 biomarker 在另一批样本上失效。',how:'随机化样本到板、每板加公共 bridge 对照；用对照做板间校准；分析阶段用 ComBat 类方法校正；实验设计阶段让批次与目标变量正交。'},
+{t:'9. 多重干扰（multiplex interference）',what:'几百上千抗体-探针同孔反应时彼此干扰，使单 assay 表现反而低于单重形式。',why:'高 plex 下抗体间交叉反应、竞争有限抗原、oligo 间互相杂交形成嵌合体、游离 oligo 竞争扩增。',impact:'新增 assay 后老 assay 精度下滑；部分低丰度靶在高 plex panel 里 CV 显著变差。',how:'panel 拆分设计（如 Olink 384-plex 子板并行）；按 assay 单独报 LOD/CV/检出率；对精度差的 assay 标记或剔除；序列设计最小化 oligo 间交叉。'},
+{t:'10. 样本起始量',what:'完成一次多重检测所需的最少血浆/细胞/组织体积或细胞数。',why:'低丰度蛋白需足够起始物才能在 LOD 以上；单细胞/空间方法在纳升级反应里完成捕获染色连接建库，体积极小导致扩增噪声与丢失。',impact:'临床珍贵样本（CSF、穿刺、单细胞）无法上高通量 panel；起始量不足直接抬高 CV、丢失低丰度靶。',how:'PEA 路线以极低体积著称（Olink Explore HT 仅 ~2 µL 血浆测 >5000 蛋白）；微流控纳升级单细胞捕获（sc-aPL、Prox-seq）保灵敏度；实验前核对平台对样本类型与体积的最低要求。'}
+];
+var bnEl=document.getElementById('bnlist');
+bn.forEach(function(b){
+  var el=document.createElement('div');el.className='bn';
+  el.innerHTML='<div class="bn-head">'+b.t+'<span class="g">▾</span></div>'+
+   '<div class="bn-body">'+
+   '<div class="row"><span class="lab">是什么</span><br>'+b.what+'</div>'+
+   '<div class="row"><span class="lab">为什么发生</span><br>'+b.why+'</div>'+
+   '<div class="row"><span class="lab">对结果影响</span><br>'+b.impact+'</div>'+
+   '<div class="row"><span class="lab">目前怎么解决</span><br>'+b.how+'</div>'+
+   '</div>';
+  bnEl.appendChild(el);
+});
+document.querySelectorAll('.bn-head').forEach(function(h){
+  h.addEventListener('click',function(){h.parentElement.classList.toggle('closed');});
+});
+</script>
+</body>
+</html>
